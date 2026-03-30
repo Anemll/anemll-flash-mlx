@@ -86,7 +86,8 @@ The runtime takes two separate paths — that split is the whole point:
 - `--mlx` points to the dense MLX model directory
 - `--experts` points to the packed expert sidecar (created above)
 
-### Resident mode (all experts in MLX memory — model must fit in RAM; skip for large models)
+
+### Resident mode (all experts in MLX memory — model must fit in RAM; useful as a performance ceiling estimate)
 
 ```bash
 python3 scripts/run_qwen35.py \
