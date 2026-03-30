@@ -53,26 +53,40 @@ Requirements: Python 3.10+, Apple Silicon, `clang` (for native I/O helper).
 ```bash
 # install with uv (recommended)
 uv sync
+source .venv/bin/activate
 
-# or with pip
-pip install -e .
+# install in editable mode
+uv pip install -e .
 
 # optional: export dependencies (torch + safetensors)
 uv sync --extra export
-# or: pip install -e ".[export]"
+# or: uv pip install -e ".[export]"
 
 # verify
 make smoke
 ```
+
+## Exporting packed experts
+
+Before running streamed inference you need to export the expert sidecar from the MLX checkpoint.
+
+### Mixed-precision sidecar (preserves original quantization)
+
+```bash
+python3 scripts/export_mixed_sidecar.py \
+  --model ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
+  --output ~/Models/packed_experts
+```
+
 
 ## Running inference
 
 The runtime takes two separate paths — that split is the whole point:
 
 - `--mlx` points to the dense MLX model directory
-- `--experts` points to the packed expert sidecar directory
+- `--experts` points to the packed expert sidecar (created above)
 
-### Resident mode (all experts in MLX memory — model must fit in RAM)
+### Resident mode (all experts in MLX memory — model must fit in RAM; skip for large models)
 
 ```bash
 python3 scripts/run_qwen35.py \
@@ -92,18 +106,6 @@ python3 scripts/run_qwen35.py \
   --max-tokens 120 --k 4 --temperature 0 \
   --slot-bank 64 --slot-bank-native --prefetch-temporal \
   --cache-io-split 4 --stream
-```
-
-### 2-bit experts
-
-```bash
-python3 scripts/run_qwen35.py \
-  --mlx ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
-  --experts ~/Models/packed_experts_2bit \
-  --prompt "What is Apple Neural Engine?" \
-  --max-tokens 120 --k 4 --temperature 0 \
-  --slot-bank 64 --slot-bank-native --prefetch-temporal \
-  --cache-io-split 4 --2-bit --stream
 ```
 
 ### Benchmarks — M5 Max 128 GB
@@ -128,25 +130,6 @@ python3 scripts/run_qwen35.py \
 | `--slot-bank 64` | **20.9** | 80.7% | 0.94 MB | Cold-cache first run |
 
 Expert size: 4-bit = 1.69 MB, UD-Q2 = 0.94 MB (44% smaller, 37% less SSD I/O)
-
-## Converting experts
-
-### Mixed-precision sidecar (preserves original quantization)
-
-```bash
-python3 scripts/export_mixed_sidecar.py \
-  --model ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
-  --output ~/Models/packed_experts
-```
-
-### Tiered mixed -> uniform 2-bit
-
-```bash
-python3 scripts/export_tiered_35b_2bit.py \
-  --model ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
-  --source ~/Models/packed_experts_tiered \
-  --output ~/Models/packed_experts_2bit
-```
 
 ## How it works
 

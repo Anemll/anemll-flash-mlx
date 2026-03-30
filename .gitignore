@@ -9,3 +9,4 @@ build/
 *.dylib
 .venv/
 .env
+uv.lock
