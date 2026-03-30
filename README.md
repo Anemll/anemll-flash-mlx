@@ -18,7 +18,7 @@ By "banking" we mean this: instead of treating every routed expert as a fresh te
 A stable bank with changing ids was fast.
 Per-token K-expert materialization was slow.
 
-The expensive part was not dynamic routing — it was asking the framework to keep rebuilding the selected experts in the hot path. Once that became clear, the rest of the architecture started to make sense. A streamed slot-bank became the first realistic external-expert shape. Miss path and hit path had to be treated as different problems. And oracle ceilings became mandatory, because they tell you whether the next problem is consume, commit, or prefetch.
+The expensive part was not dynamic routing - it was asking the framework to keep rebuilding the selected experts in the hot path. Once that became clear, the rest of the architecture started to make sense. A streamed slot-bank became the first realistic external-expert shape. Miss path and hit path had to be treated as different problems. And oracle ceilings became mandatory, because they tell you whether the next problem is consume, commit, or prefetch.
 
 ## The reusable workflow
 
@@ -42,7 +42,7 @@ Hit path and miss path are different bottlenecks.
 Early slot-bank numbers are rungs, not ceilings.
 And native code only matters if the boundary really moves.
 
-The repo is kept intentionally small — a runtime, a native I/O helper, a few export scripts, and diagnostics. No experiment archive, no framework abstractions. The goal is a codebase you can read in one sitting and modify without tracing through layers of indirection. Measure first, change one thing, measure again.
+The repo is kept intentionally small - a runtime, a native I/O helper, a few export scripts, and diagnostics. No experiment archive, no framework abstractions. The goal is a codebase you can read in one sitting and modify without tracing through layers of indirection. Measure first, change one thing, measure again.
 
 Currently targets **Qwen3.5-35B-A3B** and **Qwen3.5-397B-A17B** via [mlx-community](https://huggingface.co/mlx-community) 4-bit checkpoints. Also supports dynamic quantization checkpoints such as [Qwen3.5-35B-A3B-UD-Q2_K_XL-mlx](https://huggingface.co/Brooooooklyn/Qwen3.5-35B-A3B-UD-Q2_K_XL-mlx) (Unsloth-style mixed 2/3/4/5/8-bit).
 
@@ -81,21 +81,12 @@ python3 scripts/export_mixed_sidecar.py \
 
 ## Running inference
 
-The runtime takes two separate paths — that split is the whole point:
+The runtime takes two separate paths - that split is the whole point:
 
 - `--mlx` points to the dense MLX model directory
 - `--experts` points to the packed expert sidecar (created above)
 
 
-### Resident mode (all experts in MLX memory — model must fit in RAM; useful as a performance ceiling estimate)
-
-```bash
-python3 scripts/run_qwen35.py \
-  --mlx ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
-  --resident \
-  --prompt "What is Apple Neural Engine?" \
-  --max-tokens 120 --temperature 0 --stream
-```
 
 ### Streamed experts from SSD
 
@@ -109,7 +100,17 @@ python3 scripts/run_qwen35.py \
   --cache-io-split 4 --stream
 ```
 
-### Benchmarks — M5 Max 128 GB
+### Resident mode (all experts in MLX memory - model must fit in RAM; useful as a performance ceiling estimate)
+
+```bash
+python3 scripts/run_qwen35.py \
+  --mlx ~/Models/mlx-Qwen3.5-35B-A3B-4bit \
+  --resident \
+  --prompt "What is Apple Neural Engine?" \
+  --max-tokens 120 --temperature 0 --stream
+```
+
+### Benchmarks - M5 Max 128 GB
 
 **Qwen3.5-35B-A3B-4bit** (256 experts/layer, k=4, 120 tokens)
 
@@ -149,13 +150,13 @@ The native disk-I/O helper (`csrc/expert_io.c`) is built automatically on first 
 
 ## Runtime modes
 
-- **`--resident`** — Keep all experts in MLX memory. Ceiling check, no SSD needed.
-- **`--slot-bank N`** — Stable per-layer slot bank of size N, reload only misses from SSD.
-- **`--slot-bank-native`** — Use native C slot ownership and LRU victim selection.
-- **`--resident-pread-mlx`** — Packed-bank ceiling: pread all experts at startup, index by id.
-- **`--prefetch-temporal`** — After each token, prefetch same experts for next step.
-- **`--compiled-tail`** — Compile the final sparse-block shared-expert tail.
-- **`--2-bit`** — Use 2-bit affine experts (smaller, faster, lower quality).
+- **`--resident`** - Keep all experts in MLX memory. Ceiling check, no SSD needed.
+- **`--slot-bank N`** - Stable per-layer slot bank of size N, reload only misses from SSD.
+- **`--slot-bank-native`** - Use native C slot ownership and LRU victim selection.
+- **`--resident-pread-mlx`** - Packed-bank ceiling: pread all experts at startup, index by id.
+- **`--prefetch-temporal`** - After each token, prefetch same experts for next step.
+- **`--compiled-tail`** - Compile the final sparse-block shared-expert tail.
+- **`--2-bit`** - Use 2-bit affine experts (smaller, faster, lower quality).
 
 ## Diagnostics
 
@@ -185,8 +186,8 @@ docs/                   notes
 
 ## Acknowledgements
 
-- Apple's [LLM in a Flash](https://machinelearning.apple.com/research/efficient-large-language) and [M2R2](https://machinelearning.apple.com/research/multi-rate-residuals-transformers) papers
-- [danveloper/flash-moe](https://github.com/danveloper/flash-moe) — the original Flash-MoE implementation
+- Apple's [LLM in a Flash](https://machinelearning.apple.com/research/efficient-large-language) paper
+- [danveloper/flash-moe](https://github.com/danveloper/flash-moe) - the original Flash-MoE implementation
 - [@alexintosh](https://github.com/alexintosh) and `@danpacary` (https://github.com/ncdrone/)  for ideas and improvements
 
 ## Contact
