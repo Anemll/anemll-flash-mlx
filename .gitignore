@@ -13,3 +13,4 @@ uv.lock
 
 # autoresearch data files
 autoresearch/routing_samples*.bin
+autoresearch/predictor_weights.npz
