@@ -10,3 +10,6 @@ build/
 .venv/
 .env
 uv.lock
+
+# autoresearch data files
+autoresearch/routing_samples*.bin
