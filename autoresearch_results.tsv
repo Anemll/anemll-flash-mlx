@@ -1,0 +1,4 @@
+exp_id	commit	decode_tok_s	hit_rate_pct	status	lever	description
+Exp00	baseline	55.74	92.11	keep	Baseline	Qwen3.5-35B slot-bank 176 cache-io-split 4 k=4 500 tokens (avg runs 2+3; run 1 cold-start discarded)
+Exp01-LFU	reverted	49.87	80.82	discard	Lever2-LFU	LFU victim selection in csrc/expert_io.c; hit rate identical to LRU (170 unique experts per layer vs bank=176 — eviction pressure near zero, no room for policy to differentiate)
+Exp01-validate	n/a	n/a	92.71	discard	Lever1-predictor	N→N+1 lookahead validation: incremental_hit_rate=3.35% (gate=50%); predictor trained on same-token hidden→experts cannot predict next-token expert selection; do not integrate
